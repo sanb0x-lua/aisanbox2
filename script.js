@@ -41,69 +41,48 @@ function init() {
     }
     animateBackground();
 
-    // Логика для автоматического нажатия W в игре
+    // Автоматическое движение
     let isAutoPressActive = false;
     let autoPressInterval = null;
-    const gameFrame = document.getElementById('gameFrame');
     const toggleBtn = document.getElementById('toggleBtn');
     const btnStatus = document.querySelector('.btn-status');
+    
+    const keys = ['w', 'd', 's', 'a']; // вперед, вправо, назад, влево
+    let keyIndex = 0;
 
-    function simulateKeyPressInIframe() {
-        try {
-            if (gameFrame && gameFrame.contentWindow) {
-                // Пытаемся получить доступ к canvas для фокуса
-                const canvas = gameFrame.contentWindow.document?.querySelector('canvas');
-                
-                // Создаем события с дополнительными параметрами
-                const keyDownEvent = new gameFrame.contentWindow.KeyboardEvent('keydown', {
-                    key: 'w',
-                    code: 'KeyW',
-                    keyCode: 87,
-                    which: 87,
-                    charCode: 0,
-                    bubbles: true,
-                    cancelable: true,
-                    isTrusted: false
-                });
-                
-                const keyUpEvent = new gameFrame.contentWindow.KeyboardEvent('keyup', {
-                    key: 'w',
-                    code: 'KeyW',
-                    keyCode: 87,
-                    which: 87,
-                    charCode: 0,
-                    bubbles: true,
-                    cancelable: true,
-                    isTrusted: false
-                });
-                
-                // Попытка фокуса на canvas
-                if (canvas) {
-                    canvas.focus();
-                    canvas.dispatchEvent(keyDownEvent);
-                }
-                
-                // Отправляем в несколько целей
-                gameFrame.contentWindow.dispatchEvent(keyDownEvent);
-                if (gameFrame.contentWindow.document?.body) {
-                    gameFrame.contentWindow.document.body.dispatchEvent(keyDownEvent);
-                }
-                if (gameFrame.contentWindow.document?.documentElement) {
-                    gameFrame.contentWindow.document.documentElement.dispatchEvent(keyDownEvent);
-                }
-                
-                // keyUp через задержку
-                setTimeout(() => {
-                    if (canvas) canvas.dispatchEvent(keyUpEvent);
-                    gameFrame.contentWindow.dispatchEvent(keyUpEvent);
-                    if (gameFrame.contentWindow.document?.body) {
-                        gameFrame.contentWindow.document.body.dispatchEvent(keyUpEvent);
-                    }
-                }, 100);
-            }
-        } catch (e) {
-            console.log('W-press error:', e.message);
-        }
+    function pressKey(key) {
+        const keyCode = {'w': 87, 'd': 68, 's': 83, 'a': 65}[key];
+        const keyName = {'w': 'KeyW', 'd': 'KeyD', 's': 'KeyS', 'a': 'KeyA'}[key];
+        
+        // Нажимаем клавишу
+        const downEvent = new KeyboardEvent('keydown', {
+            key: key,
+            code: keyName,
+            keyCode: keyCode,
+            which: keyCode,
+            bubbles: true,
+            cancelable: true
+        });
+        
+        // Отпускаем клавишу
+        const upEvent = new KeyboardEvent('keyup', {
+            key: key,
+            code: keyName,
+            keyCode: keyCode,
+            which: keyCode,
+            bubbles: true,
+            cancelable: true
+        });
+        
+        document.dispatchEvent(downEvent);
+        document.body.dispatchEvent(downEvent);
+        window.dispatchEvent(downEvent);
+        
+        setTimeout(() => {
+            document.dispatchEvent(upEvent);
+            document.body.dispatchEvent(upEvent);
+            window.dispatchEvent(upEvent);
+        }, 500);
     }
 
     function toggleAutoPress() {
@@ -112,11 +91,13 @@ function init() {
         if (isAutoPressActive) {
             toggleBtn.classList.add('active');
             btnStatus.textContent = 'Включено';
+            keyIndex = 0;
             
-            // Нажимаем W каждые 2 секунды
+            // Меняем направление каждые 3 секунды
             autoPressInterval = setInterval(() => {
-                simulateKeyPressInIframe();
-            }, 2000);
+                pressKey(keys[keyIndex]);
+                keyIndex = (keyIndex + 1) % keys.length;
+            }, 3000);
         } else {
             toggleBtn.classList.remove('active');
             btnStatus.textContent = 'Выключено';
@@ -128,10 +109,8 @@ function init() {
         }
     }
 
-    // Инициализируем кнопку в состояние "Выключено"
     btnStatus.textContent = 'Выключено';
     toggleBtn.classList.remove('active');
-    
     toggleBtn.addEventListener('click', toggleAutoPress);
 
     // Footer text
