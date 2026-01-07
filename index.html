@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanbox AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="animated-bg">
+        <div class="lines-container" id="lines"></div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1 class="main-title">Sanbox AI</h1>
+        </header>
+
+        <main>
+            <div class="game-wrapper">
+                <iframe 
+                    id="gameFrame" 
+                    src="https://www.crazygames.ru/igra/hypper-sandbox?czy_invite=true&utm_source=invite&roomId=za1O6_ggz8YV5yC_RF5y1YXmZLn_sdd5Fiu9k4LD025PyFr1Klh1C-UEvW_aB3GD" 
+                    allow="autoplay; fullscreen"
+                    sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+                ></iframe>
+            </div>
+
+            <div class="controls">
+                <button id="toggleBtn" class="control-btn active">
+                    <span class="btn-status">Включено</span>
+                </button>
+            </div>
+        </main>
+
+        <footer>
+            <p id="footerText">By Sanbox</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
