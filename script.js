@@ -50,47 +50,59 @@ function init() {
 
     function simulateKeyPressInIframe() {
         try {
-            // Пытаемся отправить событие в iframe
             if (gameFrame && gameFrame.contentWindow) {
-                const keyDownEvent = new KeyboardEvent('keydown', {
+                // Пытаемся получить доступ к canvas для фокуса
+                const canvas = gameFrame.contentWindow.document?.querySelector('canvas');
+                
+                // Создаем события с дополнительными параметрами
+                const keyDownEvent = new gameFrame.contentWindow.KeyboardEvent('keydown', {
                     key: 'w',
                     code: 'KeyW',
                     keyCode: 87,
                     which: 87,
                     charCode: 0,
                     bubbles: true,
-                    cancelable: true
+                    cancelable: true,
+                    isTrusted: false
                 });
                 
-                const keyUpEvent = new KeyboardEvent('keyup', {
+                const keyUpEvent = new gameFrame.contentWindow.KeyboardEvent('keyup', {
                     key: 'w',
                     code: 'KeyW',
                     keyCode: 87,
                     which: 87,
                     charCode: 0,
                     bubbles: true,
-                    cancelable: true
+                    cancelable: true,
+                    isTrusted: false
                 });
                 
-                // Отправляем в contentWindow
-                gameFrame.contentWindow.dispatchEvent(keyDownEvent);
-                if (gameFrame.contentWindow.document) {
-                    gameFrame.contentWindow.document.dispatchEvent(keyDownEvent);
-                    gameFrame.contentWindow.document.body?.dispatchEvent(keyDownEvent);
+                // Попытка фокуса на canvas
+                if (canvas) {
+                    canvas.focus();
+                    canvas.dispatchEvent(keyDownEvent);
                 }
                 
-                // Отправляем keyUp через короткую задержку
+                // Отправляем в несколько целей
+                gameFrame.contentWindow.dispatchEvent(keyDownEvent);
+                if (gameFrame.contentWindow.document?.body) {
+                    gameFrame.contentWindow.document.body.dispatchEvent(keyDownEvent);
+                }
+                if (gameFrame.contentWindow.document?.documentElement) {
+                    gameFrame.contentWindow.document.documentElement.dispatchEvent(keyDownEvent);
+                }
+                
+                // keyUp через задержку
                 setTimeout(() => {
+                    if (canvas) canvas.dispatchEvent(keyUpEvent);
                     gameFrame.contentWindow.dispatchEvent(keyUpEvent);
-                    if (gameFrame.contentWindow.document) {
-                        gameFrame.contentWindow.document.dispatchEvent(keyUpEvent);
-                        gameFrame.contentWindow.document.body?.dispatchEvent(keyUpEvent);
+                    if (gameFrame.contentWindow.document?.body) {
+                        gameFrame.contentWindow.document.body.dispatchEvent(keyUpEvent);
                     }
-                }, 50);
+                }, 100);
             }
         } catch (e) {
-            // Iframe может блокировать события из-за CORS
-            console.log('Невозможно отправить событие в iframe');
+            console.log('W-press error:', e.message);
         }
     }
 
@@ -116,6 +128,10 @@ function init() {
         }
     }
 
+    // Инициализируем кнопку в состояние "Выключено"
+    btnStatus.textContent = 'Выключено';
+    toggleBtn.classList.remove('active');
+    
     toggleBtn.addEventListener('click', toggleAutoPress);
 
     // Footer text
