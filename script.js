@@ -57,6 +57,7 @@ function init() {
                     code: 'KeyW',
                     keyCode: 87,
                     which: 87,
+                    charCode: 0,
                     bubbles: true,
                     cancelable: true
                 });
@@ -66,20 +67,30 @@ function init() {
                     code: 'KeyW',
                     keyCode: 87,
                     which: 87,
+                    charCode: 0,
                     bubbles: true,
                     cancelable: true
                 });
                 
-                gameFrame.contentWindow.document.dispatchEvent(keyDownEvent);
-                gameFrame.contentWindow.document.body.dispatchEvent(keyDownEvent);
+                // Отправляем в contentWindow
+                gameFrame.contentWindow.dispatchEvent(keyDownEvent);
+                if (gameFrame.contentWindow.document) {
+                    gameFrame.contentWindow.document.dispatchEvent(keyDownEvent);
+                    gameFrame.contentWindow.document.body?.dispatchEvent(keyDownEvent);
+                }
                 
+                // Отправляем keyUp через короткую задержку
                 setTimeout(() => {
-                    gameFrame.contentWindow.document.dispatchEvent(keyUpEvent);
-                    gameFrame.contentWindow.document.body.dispatchEvent(keyUpEvent);
-                }, 100);
+                    gameFrame.contentWindow.dispatchEvent(keyUpEvent);
+                    if (gameFrame.contentWindow.document) {
+                        gameFrame.contentWindow.document.dispatchEvent(keyUpEvent);
+                        gameFrame.contentWindow.document.body?.dispatchEvent(keyUpEvent);
+                    }
+                }, 50);
             }
         } catch (e) {
-            console.log('Iframe блокирует отправку событий (CORS)');
+            // Iframe может блокировать события из-за CORS
+            console.log('Невозможно отправить событие в iframe');
         }
     }
 
@@ -90,10 +101,10 @@ function init() {
             toggleBtn.classList.add('active');
             btnStatus.textContent = 'Включено';
             
-            // Нажимаем W каждые 5 секунд
+            // Нажимаем W каждые 2 секунды
             autoPressInterval = setInterval(() => {
                 simulateKeyPressInIframe();
-            }, 5000);
+            }, 2000);
         } else {
             toggleBtn.classList.remove('active');
             btnStatus.textContent = 'Выключено';
