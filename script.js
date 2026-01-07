@@ -44,48 +44,42 @@ function init() {
     // Логика для автоматического нажатия W в игре
     let isAutoPressActive = false;
     let autoPressInterval = null;
-    const gameWrapper = document.getElementById('gameFrame');
+    const gameFrame = document.getElementById('gameFrame');
     const toggleBtn = document.getElementById('toggleBtn');
     const btnStatus = document.querySelector('.btn-status');
 
-    function simulateKeyPress(keyCode) {
+    function simulateKeyPressInIframe() {
         try {
-            // Создаем события для документа
-            const keyDownEvent = new KeyboardEvent('keydown', {
-                key: 'w',
-                code: 'KeyW',
-                keyCode: 87,
-                which: 87,
-                bubbles: true,
-                cancelable: true
-            });
-            
-            const keyUpEvent = new KeyboardEvent('keyup', {
-                key: 'w',
-                code: 'KeyW',
-                keyCode: 87,
-                which: 87,
-                bubbles: true,
-                cancelable: true
-            });
-            
-            // Отправляем в разные цели
-            if (window && window.document) {
-                window.document.dispatchEvent(keyDownEvent);
-                window.document.body.dispatchEvent(keyDownEvent);
-                document.dispatchEvent(keyDownEvent);
+            // Пытаемся отправить событие в iframe
+            if (gameFrame && gameFrame.contentWindow) {
+                const keyDownEvent = new KeyboardEvent('keydown', {
+                    key: 'w',
+                    code: 'KeyW',
+                    keyCode: 87,
+                    which: 87,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                const keyUpEvent = new KeyboardEvent('keyup', {
+                    key: 'w',
+                    code: 'KeyW',
+                    keyCode: 87,
+                    which: 87,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                gameFrame.contentWindow.document.dispatchEvent(keyDownEvent);
+                gameFrame.contentWindow.document.body.dispatchEvent(keyDownEvent);
+                
+                setTimeout(() => {
+                    gameFrame.contentWindow.document.dispatchEvent(keyUpEvent);
+                    gameFrame.contentWindow.document.body.dispatchEvent(keyUpEvent);
+                }, 100);
             }
-            
-            setTimeout(() => {
-                if (window && window.document) {
-                    window.document.dispatchEvent(keyUpEvent);
-                    window.document.body.dispatchEvent(keyUpEvent);
-                    document.dispatchEvent(keyUpEvent);
-                }
-            }, 100);
-            
         } catch (e) {
-            console.log('Ошибка при отправке клавиши:', e);
+            console.log('Iframe блокирует отправку событий (CORS)');
         }
     }
 
@@ -98,7 +92,7 @@ function init() {
             
             // Нажимаем W каждые 5 секунд
             autoPressInterval = setInterval(() => {
-                simulateKeyPress(87);
+                simulateKeyPressInIframe();
             }, 5000);
         } else {
             toggleBtn.classList.remove('active');
